@@ -110,30 +110,41 @@ def take_inputs(): # This returns all pieces as 3D numpy arrays; returns a list 
                     print("Invalid format. Use x,y,value")
 
             piece.insert(0, grid)
-        pieces.append(convert_grid_to_array(piece))
+        pieces.append(normalize_piece(convert_grid_to_array(piece)))
     return np.array(pieces)
-
 
 def rotate_piece(piece):
     rotations = []
 
     def add_unique(rot):
+        rot = normalize_piece(rot)
         for r in rotations:
             if np.array_equal(rot, r):
                 return
         rotations.append(rot)
-        
-    for i in range(6):
-        top_rot = piece.copy()
-        if i < 4:
-            temp = np.rot90(top_rot, k=i, axes=(0, 1))
-        if i == 4:
-            temp = np.rot90(top_rot, k=1, axes=(0, 2))
-        if i == 5:
-            temp = np.rot90(top_rot, k=-1, axes=(0, 2))
-        for spin in range(4):
-            rotated = np.rot90(temp, k=spin, axes=(2, 1))
-            add_unique(rotated)
+
+    def all_rotations_from_top(p):
+        for k in range(4):
+            add_unique(np.rot90(p, k=k, axes=(1, 2)))  # spin around vertical axis
+
+    # original orientation (top = +z)
+    all_rotations_from_top(piece)
+
+    # flip to bottom (top = -z)
+    all_rotations_from_top(np.rot90(piece, 2, axes=(0, 2)))
+
+    # bring +x to top
+    all_rotations_from_top(np.rot90(piece, -1, axes=(0, 2)))
+
+    # bring -x to top
+    all_rotations_from_top(np.rot90(piece, 1, axes=(0, 2)))
+
+    # bring +y to top
+    all_rotations_from_top(np.rot90(piece, 1, axes=(0, 1)))
+
+    # bring -y to top
+    all_rotations_from_top(np.rot90(piece, -1, axes=(0, 1)))
+
     return np.array(rotations)
 
 def can_place(cube, piece_blocks, dx, dy, dz):
@@ -162,13 +173,30 @@ def remove_piece(cube, piece_blocks, dx, dy, dz):
                 if piece_blocks[z, y, x]:
                     cube[z + dz, y + dy, x + dx] = 0
 
+def canonical_form(cube):
+    rotations = rotate_piece(cube)
+    return min(rotations, key=lambda x: x.tobytes())
+
 def check_for_duplicate_solutions(solutions, new_solution):
-    rotated_solutions = rotate_piece(new_solution) # Generate all rotations of the new solution
+    canon = canonical_form(new_solution)
     for sol in solutions:
-        for rot in rotated_solutions:
-            if np.array_equal(rot, sol):
-                return False
+        if np.array_equal(sol, canon):
+            return False
+    solutions.append(canon)
     return True
+
+def normalize_piece(piece):
+    coords = np.argwhere(piece != 0)
+    if len(coords) == 0:
+        return piece.copy()
+    
+    min_z, min_y, min_x = coords.min(axis=0)
+
+    normalized = np.zeros_like(piece)
+    for z, y, x in coords: 
+        normalized[z - min_z, y - min_y, x - min_x] = piece[z, y, x]
+
+    return normalized
 
 def solve_cube(all_pieces, cube=None, piece_index=0, solutions=None):
     if cube is None:
@@ -180,7 +208,6 @@ def solve_cube(all_pieces, cube=None, piece_index=0, solutions=None):
         print("Found a solution! checking if duplicate.")
         if check_for_duplicate_solutions(solutions, cube.copy()):
             print("New unique solution found!")
-            solutions.append(cube.copy())
         else: 
             print("Duplicate solution found, not adding.")
         return
@@ -196,7 +223,7 @@ def solve_cube(all_pieces, cube=None, piece_index=0, solutions=None):
                         solve_cube(all_pieces, cube, piece_index + 1, solutions)
                         remove_piece(cube, orientation, dx, dy, dz)
 
-#arr = take_inputs() # This will prompt the user to input their pieces and store them as 3D numpy arrays in a list called arr
+arr = take_inputs() # This will prompt the user to input their pieces and store them as 3D numpy arrays in a list called arr
 
 all_types = [
     rotate_piece(arr[0]),  # list of rotations of piece1
@@ -206,9 +233,11 @@ all_types = [
     rotate_piece(arr[4])
 ]
 
-"""print(arr)
-print("rotations of pieces: ")
-print(np.array(rotate_piece(arr[0])))"""
+
+
+print(arr)
+#print("rotations of pieces: ")
+#print(np.array(rotate_piece(arr[1])))
 solutions = []
 solve_cube(all_types, solutions=solutions)
 print("solutions: ", np.array(solutions))

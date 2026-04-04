@@ -196,7 +196,7 @@ def solve_cube(all_pieces, cube=None, piece_index=0, solutions=None):
                         solve_cube(all_pieces, cube, piece_index + 1, solutions)
                         remove_piece(cube, orientation, dx, dy, dz)
 
-arr = take_inputs() # This will prompt the user to input their pieces and store them as 3D numpy arrays in a list called arr
+#arr = take_inputs() # This will prompt the user to input their pieces and store them as 3D numpy arrays in a list called arr
 
 all_types = [
     rotate_piece(arr[0]),  # list of rotations of piece1
@@ -206,10 +206,10 @@ all_types = [
     rotate_piece(arr[4])
 ]
 
-print(arr)
+"""print(arr)
 print("rotations of pieces: ")
-print(np.array(rotate_piece(arr[0])))
-"""solutions = []
+print(np.array(rotate_piece(arr[0])))"""
+solutions = []
 solve_cube(all_types, solutions=solutions)
-print("solutions: ", np.array(solutions))"""
+print("solutions: ", np.array(solutions))
 

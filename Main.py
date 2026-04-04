@@ -235,10 +235,11 @@ all_types = [
 
 
 
-print(arr)
+#print(arr)
 #print("rotations of pieces: ")
 #print(np.array(rotate_piece(arr[1])))
 solutions = []
+print("Determining all solutions. Please wait.")
 solve_cube(all_types, solutions=solutions)
 print("solutions: ", np.array(solutions))
 

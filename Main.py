@@ -1,67 +1,5 @@
 import numpy as np
 
-# Create a 3x3x3 array
-arr = np.array([np.array([
-    [[1, 1, 0],
-     [1, 0, 0],
-     [1, 1, 0]],
-
-    [[0, 0, 0],
-     [0, 0, 0],
-     [0, 0, 0]],
-
-    [[0, 0, 0],
-     [0, 0, 0],
-     [0, 0, 0]]
-]), np.array([
-    [[0, 1, 1],
-     [1, 1, 0],
-     [0, 1, 0]],
-
-    [[0, 0, 0],
-     [0, 1, 0],
-     [0, 0, 0]],
-
-    [[0, 0, 0],
-     [0, 0, 0],
-     [0, 0, 0]]
-]), np.array([
-    [[1, 0, 0],
-     [1, 0, 0],
-     [1, 1, 0]],
-
-    [[0, 0, 0],
-     [0, 0, 0],
-     [0, 0, 0]],
-
-    [[0, 0, 0],
-     [0, 0, 0],
-     [0, 0, 0]]
-]), np.array([
-    [[1, 1, 0],
-     [1, 0, 0],
-     [1, 1, 0]],
-
-    [[1, 0, 0],
-     [0, 0, 0],
-     [0, 0, 0]],
-
-    [[0, 0, 0],
-     [0, 0, 0],
-     [0, 0, 0]]
-]), np.array([
-    [[1, 0, 0],
-     [1, 1, 0],
-     [1, 1, 1]],
-
-    [[0, 0, 0],
-     [0, 0, 0],
-     [0, 0, 0]],
-
-    [[0, 0, 0],
-     [0, 0, 0],
-     [0, 0, 0]]
-])])
 
 def print_grid(grid):
     print()
@@ -173,16 +111,16 @@ def remove_piece(cube, piece_blocks, dx, dy, dz):
                 if piece_blocks[z, y, x]:
                     cube[z + dz, y + dy, x + dx] = 0
 
-def canonical_form(cube):
+def normal_form(cube):
     rotations = rotate_piece(cube)
     return min(rotations, key=lambda x: x.tobytes())
 
 def check_for_duplicate_solutions(solutions, new_solution):
-    canon = canonical_form(new_solution)
+    normal = normal_form(new_solution)
     for sol in solutions:
-        if np.array_equal(sol, canon):
+        if np.array_equal(sol, normal):
             return False
-    solutions.append(canon)
+    solutions.append(normal)
     return True
 
 def normalize_piece(piece):
